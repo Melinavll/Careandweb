@@ -37,7 +37,10 @@ export default async function DashboardPage() {
   if (!business) {
     return (
       <main className="mx-auto max-w-2xl p-6">
-        <h1 className="text-2xl font-semibold text-neutral-900">Tableau de bord</h1>
+        <div className="flex items-start justify-between">
+          <h1 className="text-2xl font-semibold text-neutral-900">Tableau de bord</h1>
+          <LogoutButton />
+        </div>
         <p className="mt-2 text-sm text-neutral-500">
           Aucun établissement n&apos;est encore associé à ton compte.
         </p>
@@ -47,7 +50,6 @@ export default async function DashboardPage() {
         >
           Créer mon établissement
         </Link>
-        <LogoutButton />
       </main>
     );
   }
@@ -80,12 +82,12 @@ export default async function DashboardPage() {
           <h1 className="text-2xl font-semibold text-neutral-900">Tableau de bord</h1>
           <p className="mt-1 text-sm text-neutral-500">{business.name}</p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           <Link
             href="/dashboard/requests"
             className="text-sm text-neutral-500 underline"
           >
-            Liens d&apos;avis
+            Demander un avis
           </Link>
           <Link
             href="/dashboard/billing"
@@ -99,6 +101,7 @@ export default async function DashboardPage() {
           >
             Paramètres
           </Link>
+          <LogoutButton />
         </div>
       </div>
 
@@ -144,8 +147,6 @@ export default async function DashboardPage() {
           <p className="text-sm text-neutral-500">Aucun avis pour le moment.</p>
         )}
       </div>
-
-      <LogoutButton />
     </main>
   );
 }

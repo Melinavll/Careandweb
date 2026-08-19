@@ -79,6 +79,32 @@ export async function POST(request: Request) {
       break;
     }
 
+    case "invoice.payment_failed": {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscriptionRef = invoice.parent?.subscription_details?.subscription;
+      const subscriptionId =
+        typeof subscriptionRef === "string"
+          ? subscriptionRef
+          : subscriptionRef?.id;
+
+      if (subscriptionId) {
+        // Re-fetch rather than trust event data: Stripe already flips the
+        // subscription to `past_due` on a failed invoice, so this reflects
+        // its real current status instead of us guessing at one.
+        const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const businessId = subscription.metadata?.business_id;
+
+        if (businessId) {
+          await upsertSubscription(
+            businessId,
+            subscription.customer as string,
+            subscription
+          );
+        }
+      }
+      break;
+    }
+
     default:
       break;
   }

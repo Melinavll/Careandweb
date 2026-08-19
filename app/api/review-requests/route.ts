@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { resend } from "@/lib/resend";
 
 export async function POST(request: Request) {
   const supabase = createClient();
@@ -20,7 +21,7 @@ export async function POST(request: Request) {
 
   const { data: business } = await supabase
     .from("businesses")
-    .select("id")
+    .select("id, name")
     .eq("user_id", user.id)
     .order("created_at", { ascending: true })
     .limit(1)
@@ -61,5 +62,28 @@ export async function POST(request: Request) {
     );
   }
 
-  return NextResponse.json({ reviewRequest });
+  let emailSent = false;
+
+  if (reviewRequest.customer_email) {
+    const origin = new URL(request.url).origin;
+    const link = `${origin}/r/${reviewRequest.unique_token}`;
+
+    try {
+      const { error: emailError } = await resend.emails.send({
+        from: process.env.EMAIL_FROM ?? "onboarding@resend.dev",
+        to: reviewRequest.customer_email,
+        subject: `${business.name} aimerait avoir votre avis`,
+        html: `
+          <p>Bonjour${reviewRequest.customer_name ? " " + reviewRequest.customer_name : ""},</p>
+          <p>Merci pour votre visite chez ${business.name} ! Votre avis nous intéresse.</p>
+          <p><a href="${link}">Donner mon avis</a></p>
+        `,
+      });
+      emailSent = !emailError;
+    } catch {
+      emailSent = false;
+    }
+  }
+
+  return NextResponse.json({ reviewRequest, emailSent });
 }

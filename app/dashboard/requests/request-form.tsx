@@ -13,12 +13,18 @@ export default function RequestForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdToken, setCreatedToken] = useState<string | null>(null);
+  const [emailStatus, setEmailStatus] = useState<
+    "sent" | "failed" | "none" | null
+  >(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
     setLoading(true);
     setCreatedToken(null);
+    setEmailStatus(null);
+
+    const hadEmail = email.trim().length > 0;
 
     const response = await fetch("/api/review-requests", {
       method: "POST",
@@ -39,6 +45,7 @@ export default function RequestForm() {
     }
 
     setCreatedToken(data.reviewRequest.unique_token);
+    setEmailStatus(hadEmail ? (data.emailSent ? "sent" : "failed") : "none");
     setName("");
     setEmail("");
     setPhone("");
@@ -98,7 +105,21 @@ export default function RequestForm() {
         </button>
       </form>
 
-      {createdToken && <CopyLink token={createdToken} />}
+      {createdToken && (
+        <div className="space-y-2">
+          {emailStatus === "sent" && (
+            <p className="text-sm text-green-700">
+              Lien envoyé par email au client.
+            </p>
+          )}
+          {emailStatus === "failed" && (
+            <p className="text-sm text-red-600">
+              L&apos;email n&apos;a pas pu être envoyé — copie le lien manuellement.
+            </p>
+          )}
+          <CopyLink token={createdToken} />
+        </div>
+      )}
     </div>
   );
 }

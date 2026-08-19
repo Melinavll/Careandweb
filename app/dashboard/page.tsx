@@ -88,6 +88,12 @@ export default async function DashboardPage() {
             Liens d&apos;avis
           </Link>
           <Link
+            href="/dashboard/billing"
+            className="text-sm text-neutral-500 underline"
+          >
+            Abonnement
+          </Link>
+          <Link
             href="/dashboard/settings"
             className="text-sm text-neutral-500 underline"
           >

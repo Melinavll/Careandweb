@@ -1,7 +1,11 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import ManageSubscriptionButton from "./manage-subscription-button";
 import SubscribeButton from "./subscribe-button";
+
+const NEEDS_ATTENTION_STATUSES = ["past_due", "unpaid"];
+const ENDED_STATUSES = ["canceled", "incomplete_expired"];
 
 const STATUS_LABELS: Record<string, string> = {
   active: "Actif",
@@ -54,6 +58,10 @@ export default async function BillingPage() {
 
   const isActive =
     subscription?.status === "active" || subscription?.status === "trialing";
+  const needsAttention =
+    !!subscription && NEEDS_ATTENTION_STATUSES.includes(subscription.status);
+  const hasEnded =
+    !subscription || ENDED_STATUSES.includes(subscription.status);
 
   return (
     <main className="mx-auto max-w-sm space-y-6 p-6">
@@ -87,7 +95,24 @@ export default async function BillingPage() {
         )}
       </div>
 
-      {!isActive && <SubscribeButton />}
+      {needsAttention && (
+        <p className="text-sm text-red-600">
+          Ton dernier paiement a échoué. Mets à jour ton moyen de paiement
+          pour éviter une interruption de service.
+        </p>
+      )}
+
+      {hasEnded ? (
+        <SubscribeButton />
+      ) : (
+        <ManageSubscriptionButton
+          label={
+            needsAttention
+              ? "Mettre à jour mon moyen de paiement"
+              : "Gérer mon abonnement"
+          }
+        />
+      )}
     </main>
   );
 }

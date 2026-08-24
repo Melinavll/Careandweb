@@ -57,6 +57,21 @@ export default function ReviewForm({
     setShowForm(true);
   }
 
+  async function handleGoogleLinkClick() {
+    setError(null);
+    setRedirecting(true);
+
+    try {
+      await submitReview({ rating, redirectedToGoogle: true });
+    } catch {
+      // On redirige quand même vers Google même si l'enregistrement échoue.
+    }
+
+    if (googleReviewLink) {
+      window.location.href = googleReviewLink;
+    }
+  }
+
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
@@ -82,9 +97,19 @@ export default function ReviewForm({
 
   if (submitted) {
     return (
-      <p className="rounded-lg bg-neutral-100 p-4 text-sm text-neutral-700">
-        Merci pour ton retour, il a bien été transmis à l&apos;établissement.
-      </p>
+      <div className="space-y-3">
+        <p className="rounded-lg bg-neutral-100 p-4 text-sm text-neutral-700">
+          Merci pour ton retour, il a bien été transmis à l&apos;établissement.
+        </p>
+        {googleReviewLink && (
+          <a
+            href={googleReviewLink}
+            className="block text-center text-xs text-neutral-500 underline"
+          >
+            Tu peux aussi partager ton avis publiquement sur Google
+          </a>
+        )}
+      </div>
     );
   }
 
@@ -113,6 +138,16 @@ export default function ReviewForm({
           <p className="text-center text-sm text-neutral-600">
             Merci de nous en dire plus, nous reviendrons vers toi.
           </p>
+
+          {googleReviewLink && (
+            <button
+              type="button"
+              onClick={handleGoogleLinkClick}
+              className="block w-full text-center text-xs text-neutral-500 underline"
+            >
+              Tu préfères plutôt laisser un avis public sur Google ?
+            </button>
+          )}
 
           {error && <p className="text-sm text-red-600">{error}</p>}
 
